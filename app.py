@@ -17,7 +17,6 @@ toolbar = DebugToolbarExtension(app)
 connect_db(app)
 
 app.app_context().push()
-#db.create_all()
 
 @app.route('/')
 def index():
@@ -35,16 +34,16 @@ def login_user():
         user = User.authenticate(username, password)
         if user:
             flash(f"Welcome back, {user.first_name}!", 'success')
-            session['user_id'] = user.id
+            session['username'] = user.username
             return redirect('/secret')
         else:
             form.username.errors = ['Please enter a valid username and password']
     return render_template('login_form.html', form=form)        
 
-@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['GET','POST'])
 def logout_user():
     """Logs out user and removes user from session"""
-    session.pop('user_id')
+    session.pop('username')
     flash('Goodbye!', 'info')
     return redirect('/login')
 
@@ -61,7 +60,7 @@ def register_user():
         except IntegrityError:
             form.username.errors.append('Uh-oh! That username is taken. Please pick another')
             return render_template('register_form.html', form=form)
-        session['user_id'] = new_user.id
+        session['username'] = new_user.id
         flash(f"Welcome, {new_user.first_name}! Your account has been created!", 'success')
         return redirect('/secret')
     
@@ -69,6 +68,9 @@ def register_user():
 
 @app.route('/secret')
 def show_secret():
+    if "username" not in session:
+        flash("Please login first!", "danger")
+        return redirect('/')
     return render_template('secret.html')
           
 

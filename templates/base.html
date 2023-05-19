@@ -24,13 +24,13 @@ https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/slate/bootstrap.min.css
         <div class="container">
           <a href="/" class="navbar-brand text-light">Flask Feedback</a>
           <ul class="nav navbar-nav flex-row float-right">
-            {% if session['user_id'] %}
+            {% if session['username'] %}
             <form action="/logout" method="POST">
               <li class="nav-item">
-                <a class="nav-link pr-3 text-light" href="/">Logout</a>
+                <a class="nav-link pr-3 text-light" href="/logout">Logout</a>
               </li>
             </form>
-            
+
             {% else %}
             <li class="nav-item">
               <a class="nav-link pr-3 text-light" href="/login">Login</a>
