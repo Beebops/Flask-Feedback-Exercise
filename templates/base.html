@@ -25,7 +25,7 @@ https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/slate/bootstrap.min.css
           <a href="/" class="navbar-brand text-light">Flask Feedback</a>
           <ul class="nav navbar-nav flex-row float-right">
             {% if session['username'] %}
-            <form action="/logout" method="POST">
+            <form method="POST">
               <li class="nav-item">
                 <a class="nav-link pr-3 text-light" href="/logout">Logout</a>
               </li>
