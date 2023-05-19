@@ -15,7 +15,9 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+
 app.app_context().push()
+#db.create_all()
 
 @app.route('/')
 def index():
@@ -39,7 +41,11 @@ def register_user():
         flash(f"Welcome, {new_user.first_name}! Your account has been created!", 'success')
         return redirect('/secret')
     
-    return render_template('register_form.html', form=form)    
+    return render_template('register_form.html', form=form)
+
+@app.route('/secret')
+def show_secret():
+    return render_template('secret.html')
           
 
 

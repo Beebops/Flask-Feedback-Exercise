@@ -28,10 +28,10 @@ class User(db.Model):
     last_name= db.Column(db.String(30), nullable=False)
 
     @classmethod
-    def register(cls, username, pwd, email, first_name, last_name):
+    def register(cls, username, password, email, first_name, last_name):
         """Register user w/hashed password & return user."""
 
-        hashed = bcrypt.generate_password_hash(pwd)
+        hashed = bcrypt.generate_password_hash(password)
         # turn bytestring into normal (unicode utf8) string
         hashed_utf8 = hashed.decode("utf8")
 
