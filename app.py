@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, Feedback
-from forms import RegisterForm, UserLoginForm
+from forms import RegisterForm, UserLoginForm, FeedbackForm
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -22,6 +22,8 @@ app.app_context().push()
 def index():
     """Redirects to registration form"""
     return redirect('/register')
+
+# ---- User Routes -------
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
@@ -68,13 +70,44 @@ def register_user():
 
 @app.route('/users/<username>')
 def show_secret(username):
+    """Shows the logged in User's secret information"""
     if "username" not in session:
         flash("Please login first!", "danger")
         return redirect('/')
     user = User.query.get_or_404(username)
-    return render_template('secret.html', user=user)
+    all_feedback = Feedback.query.all()
+    return render_template('secret.html', user=user, all_feedback=all_feedback)
           
+# ---- Feedback Routes -------
+@app.route('/users/<username>/feedback/add')
+def show_feedback_form(username):
+    """Show feedback form to logged in User"""
+    if "username" not in session:
+        flash("Please login first!", "danger")
+        return redirect('/')
+    
+    user = User.query.get_or_404(username)
+    form = FeedbackForm()
+    return render_template('feedback_form.html', user=user, form=form)
 
+@app.route('/users/<username>/feedback/add', methods=['POST'])
+def submit_feedback(username):
+    """Handles logged in User's feedback form submit"""
+    if "username" not in session:
+        flash("Please login first!", "danger")
+        return redirect('/')
+    
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        content = form.content.data
+        new_feedback = Feedback(title=title, content=content, username=username)
+        db.session.add(new_feedback)
+        db.session.commit()
+        flash('Thank you for your feedback!', 'success')
+        return redirect(f'/users/{username}')
+   
+    
 
 
 if __name__ == '__main__':
