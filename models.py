@@ -11,6 +11,20 @@ def connect_db(app):
     db.app = app
     db.init_app(app)
 
+class Feedback(db.Model):
+    """A Model to represent a User's feedback"""
+    __tablename__ = 'feedback'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    username = db.Column(db.Text, db.ForeignKey('users.username'))
+
+    def __repr__(self):
+        return f"Title: {self.title}, author: {self.username}"
+
+
+
 class User(db.Model):
     """A User model"""
     __tablename__ = 'users'
