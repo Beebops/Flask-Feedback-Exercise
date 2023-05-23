@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, Feedback
 from forms import RegisterForm, UserLoginForm, FeedbackForm
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mylittlesecret'
@@ -68,10 +68,37 @@ def register_user():
     
     return render_template('register_form.html', form=form)
 
+@app.route('/users/<username>/delete', methods=['POST'])
+def delete_user(username):
+    """Deletes a user and their associated feedback"""
+    print(f' ***** {username} ******')
+    if 'username' not in session:
+        flash("Please login first!", "danger")
+        return redirect('/')
+
+    if username != session['username']:       
+        flash("You don't have permission to do that!", "danger")
+        return redirect('/')
+
+    try:
+        user = User.query.get_or_404(username)
+
+        # Delete the associated feedback using cascading deletion
+        db.session.delete(user)
+
+        db.session.commit()
+        flash("User and associated feedback deleted!", "info")
+        return redirect('/')
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash("An error occurred while deleting the user and associated feedback.", "danger")
+        return redirect('/')    
+
+
 @app.route('/users/<username>')
 def show_secret(username):
     """Shows the logged in User's secret information"""
-    if "username" not in session:
+    if "username" not in session or username != session['username']:
         flash("Please login first!", "danger")
         return redirect('/')
     user = User.query.get_or_404(username)
@@ -106,7 +133,25 @@ def submit_feedback(username):
         db.session.commit()
         flash('Thank you for your feedback!', 'success')
         return redirect(f'/users/{username}')
-   
+
+@app.route('/feedback/<feedback_id>/delete', methods=['POST'])
+def delete_feedback(feedback_id):
+    """Deletes the selected feedback of the logged in User"""
+    if 'username' not in session:
+        flash("Please login first!", "danger")
+        return redirect('/')
+    
+    try:
+        feedback = Feedback.query.get_or_404(feedback_id)
+        db.session.delete(feedback)
+        db.session.commit()
+        flash("Feedback deleted!", "info")
+        return redirect(f'/users/{feedback.username}')
+    except SQLAlchemyError:    
+        db.session.rollback()
+        flash("An error occurred while deleting the feedback.", "danger")
+        return redirect('/')
+
     
 
 
